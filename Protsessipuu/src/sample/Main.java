@@ -3,52 +3,65 @@ package sample;
 import javafx.application.Application;
 import javafx.event.*;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import javafx.stage.Popup;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.paint.Color;
 
+import java.time.LocalDate;
+import java.util.Date;
 
 
 public class Main extends Application{
+
+
     /*üle vaadata*/
-    Stage Aken = new Stage();
     Button vaade = new Button("vaate muutmine");
-    Button nupp = new Button("sisesta");
     double xx;
     double yy;
-    int counter = 0;
+    int counterRuut = 0;
+    int counterLiide=0;
+    double x1;
+    double y1;
+    double x2;
+    double y2;
+    Object aktiivne;
 
-    Rectangle algusobjekt = new Rectangle();
-    Text nimetus;
+    Kast algusobjekt = new Kast();
+    Liide aOliide1 =new Liide();
+    Liide aOliide2=new Liide();
+
+    Liitmine joon=new Liitmine();
+    int id;
+
+    LocalDate alustamine;
+    LocalDate lõpetamine ;
+
+    String eNimi=new String();
+    String eKirjeldus=new String();
 
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-
         StackPane kaart = new StackPane();
         kaart.setPrefSize(600, 600);
         TextField koordinaadid = new TextField();
         kaart.getChildren().addAll(koordinaadid);
+        kaart.setStyle("-fx-background-color: #FFFAAF;");
+
 
         /*menuu objektide defineerimine*/
         Rectangle protsessiAlgusTaust = new Rectangle(140, 70, Color.TRANSPARENT);
         protsessiAlgusTaust.setStroke(Color.BLUEVIOLET);
         protsessiAlgusTaust.setStrokeWidth(10);
-        Text protsessialgusNimi = new Text("Protsessi algus");
-        Group protsessialgus = new Group();
-        protsessialgus.getChildren().addAll(protsessialgusNimi, protsessiAlgusTaust);
-        protsessialgus.setUserData(protsessialgusNimi);
+
 
         Rectangle protsessiEtappTaust = new Rectangle(140, 70, Color.TRANSPARENT);
         protsessiEtappTaust.setStroke(Color.RED);
@@ -71,20 +84,16 @@ public class Main extends Application{
         Group protsessiLõpp = new Group();
         protsessiLõpp.getChildren().addAll(protsessiLõppNimi, protsessiLõppTaust);
 
-
         VBox menuu = new VBox(8);
         menuu.setSpacing(10);
-        menuu.getChildren().addAll(protsessialgus, protsessiEtapp, protsessiVaheetapp, protsessiLõpp);
+        menuu.getChildren().addAll(protsessiAlgusTaust, protsessiEtapp, protsessiVaheetapp, protsessiLõpp);
         menuu.setStyle("-fx-background-color: #C0C0C0;");
-
-        /*See tuleb maha võtta*/
-        double menuuxx = menuu.getWidth();
 
         /*Juhtimisakna seadistamine*/
         TextField etapp = new TextField();
         TextField kirjeldus = new TextField();
-        ComboBox aegAlgus = new ComboBox();
-        ComboBox aegLõpp = new ComboBox();
+        ComboBox<String> aegAlgus = new ComboBox<>();
+        ComboBox<String> aegLõpp = new ComboBox<>();
         Button kinnita = new Button();
 
         VBox juhtPaneel = new VBox(4);
@@ -94,175 +103,166 @@ public class Main extends Application{
         aegAlgus.setPromptText("Protsessi algus");
         aegLõpp.setPromptText("Protsessi lõpp");
         kinnita.setText("Kinnita");
-        nupp.setText("sisesta etapi kirjeldus");
+
         juhtPaneel.getChildren().addAll(etapp, kirjeldus, aegAlgus, aegLõpp, kinnita);
 
+        TextArea loggiraamat=new TextArea();
 
-        /*SEE TULEB HILJEM, AJATELG */
-        /*
-        HBox juhtimine=new HBox(3);
-        juhtimine.setStyle("-fx-background:#7FFFD4");
-        juhtimine.setPrefSize(300,40);
-        juhtimine.getChildren().add(vaade);
-        */
         /**/
         BorderPane tooaken = new BorderPane();
         tooaken.setCenter(kaart);
         tooaken.setLeft(menuu);
         tooaken.setRight(juhtPaneel);
-        //tooaken.setTop(juhtimine);
+        tooaken.setBottom(loggiraamat);
 
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(tooaken, 600, 600));
         primaryStage.show();
 
             /*hiire koordinaatide saamine ja kuvamine*/
-        kaart.setOnMouseMoved(event -> {
-            double xx = event.getSceneX();
-            double yy = event.getSceneY();
-            koordinaadid.setTranslateX(xx);
-            koordinaadid.setTranslateY(yy);
+        tooaken.setOnMouseMoved(event -> {
+            xx = event.getScreenX();
+            yy = event.getScreenY();
+
+            koordinaadid.setTranslateX(xx+30);
+            koordinaadid.setTranslateY(yy-260);
+            koordinaadid.setPrefSize(5,10);
             koordinaadid.setText("x=" + xx + "  y=" + yy);
+
         });
-        /*kasti lohistamine töölauale*/
-        protsessialgus.setOnMouseDragged(event -> {
-            double xx = event.getSceneX();
-            double yy = event.getSceneY();
+        /*kasti lohistamine töölauale,lihtsalt lohistamiseks*/
+        protsessiAlgusTaust.setOnMouseDragged(event -> {
+            xx = event.getSceneX();
+            yy = event.getSceneY();
             protsessiAlgusTaust.setTranslateX(xx);
             protsessiAlgusTaust.setTranslateY(yy);
+
         });
         /*uue objekti loomine töölauale*/
-        protsessialgus.setOnMouseReleased(viskamine -> {
-            //protsessialgus.setTranslateX(30);
-            //protsessialgus.setTranslateY(30);
-            double xx = viskamine.getSceneX();
-            double yy = viskamine.getSceneY();
-            etapp.setFocusTraversable(true);
-            counter = counter + 1;                      //abimuutuja, mille järgi antakse objektide nimedele järgunumber, nt etapp(counter)
-            algusobjekt = Objektid.ringLisamine(xx, yy, menuuxx, etapp);        //Meetod ringilisamine tekitab uue ruudu töölauale
-            nimetus = Objektid.ringiNimi(counter, xx, yy, menuuxx);             // Meetod ringilisamine tekitab uuele ruudule ka nime
-            algusobjekt.setId(nimetus.toString());
-            kaart.getChildren().addAll(algusobjekt, nimetus);
-            //System.out.println(nimetus);
+        protsessiAlgusTaust.setOnMouseReleased(viskamine -> {
+            xx = protsessiAlgusTaust.getTranslateX();
+            yy = protsessiAlgusTaust.getTranslateY();
+            counterRuut = counterRuut +1;
+            algusobjekt.id= counterRuut;
+            counterLiide=counterLiide+1;
+
+            aOliide1.liiteID=counterLiide;
+            aOliide2.liiteID=counterLiide;
+
+            /*Kirjutamine*/
+            Stage popuptäitmiseks = new Stage();
+            VBox popupKere = new VBox();
+            TextField eetapp = new TextField();
+            TextField eekirjeldus = new TextField();
+            DatePicker eeaegLõpp = new DatePicker();
+            DatePicker eeaegAlgus = new DatePicker();
+            Button eekinnita = new Button();
+            TextField eexx=new TextField("x-koordinaadid");
+            TextField eeyy=new TextField("y-koordinaadid");
+            eetapp.setPromptText("etapp");
+            eekirjeldus.setPromptText("kirjeldus");
+            eekirjeldus.setPrefSize(100,40);
+            eeaegAlgus.setPromptText("algus");
+            eeaegLõpp.setPromptText("Lõpp");
+            eekinnita.setText("Kinnita");
+
+            eexx.setText(String.valueOf(xx));
+            eeyy.setText(String.valueOf(yy));
+
+            popuptäitmiseks.initModality(Modality.APPLICATION_MODAL);
+            popupKere.getChildren().addAll(eexx,eeyy,eetapp, eekirjeldus, eeaegAlgus, eeaegLõpp, eekinnita);
+            Scene popup = new Scene(popupKere, 300, 300);
+            popuptäitmiseks.setScene(popup);
+            Label popupPealkiri=new Label("Popup Window");
+            popupPealkiri.setText(String.valueOf(counterRuut));
+            popuptäitmiseks.show();
+
+            eekinnita.setOnAction(event -> {
+                eNimi=eetapp.getText();
+                eKirjeldus=eekirjeldus.getText();
+                alustamine=eeaegAlgus.getValue();
+                lõpetamine=eeaegLõpp.getValue();
+
+                algusobjekt=Objektid.etapiLisamine(protsessiAlgusTaust, counterRuut,eNimi,eKirjeldus);
+
+                Text protsessialgusNimi = new Text("Protsessi algus");
+                protsessialgusNimi.setText(String.valueOf(eNimi));
+                protsessialgusNimi.setTranslateX(algusobjekt.getLocalToParentTransform().getTx());
+                protsessialgusNimi.setTranslateY(algusobjekt.getLocalToParentTransform().getTy()-algusobjekt.getHeight()/3+10);
+                protsessialgusNimi.setX(0);
+                protsessialgusNimi.setY(0);
+
+                Text protsessialgusKirjeldus=new Text("Protsessi kirjeldus");
+                protsessialgusKirjeldus.setText(String.valueOf(eKirjeldus));
+                protsessialgusKirjeldus.setTranslateX(algusobjekt.getLocalToParentTransform().getTx());
+                protsessialgusKirjeldus.setTranslateY(algusobjekt.getLocalToParentTransform().getTy()-algusobjekt.getHeight()/3+20);
+                protsessialgusKirjeldus.setX(0);
+                protsessialgusKirjeldus.setY(0);
+
+                Text protsessialgusAeg=new Text("alustamine");
+                protsessialgusAeg.setText(String.valueOf(alustamine));
+                protsessialgusAeg.setTranslateX(algusobjekt.getLocalToParentTransform().getTx()-27);
+                protsessialgusAeg.setTranslateY(algusobjekt.getLocalToParentTransform().getTy()-algusobjekt.getHeight()/5*2+40);
+
+                Text protsessilõppAeg=new Text("lõpetamine");
+                protsessilõppAeg.setText(String.valueOf(alustamine));
+                protsessilõppAeg.setTranslateX(algusobjekt.getLocalToParentTransform().getTx()+27);
+                protsessilõppAeg.setTranslateY(algusobjekt.getLocalToParentTransform().getTy()-algusobjekt.getHeight()/5*2+50);
+
+                aOliide1 =Objektid.ylemine(algusobjekt,counterLiide);
+                aOliide2 =Objektid.alumine(algusobjekt,counterLiide);
+
+
+                kaart.getChildren().addAll(algusobjekt, aOliide1,aOliide2,protsessialgusNimi,protsessialgusKirjeldus,protsessialgusAeg,protsessilõppAeg);
+                System.out.println(algusobjekt.id);
+                popuptäitmiseks.hide();
+                xx=0;
+                yy=0;
+                protsessiAlgusTaust.setTranslateX(0);
+                protsessiAlgusTaust.setTranslateY(0);
+            });
+
         });
-/*
-     nupp.setOnAction(event -> {
-         etapp.setText("tehtud");
-         Text l=new Text();
-         l=Kirjeldus.proov(etapp,kirjeldus);
-         System.out.println(l);
-     });*/
- /*Objektile klickides saab selle andmed kätte*/
-/*
-     vaade.setOnAction(event -> {           //Nupp aktiveerib vaikimisi tekstid, see tuleb ära muuta
-         VBox infoks = new VBox(20);
-         Text uustekst = new Text("töötas");
-         tooaken.setRight(infoks);
-         TextField etappNimi=new TextField();
-         etappNimi.setPromptText("\"etappi nimi\"");
-         TextField etapiKirjeldus=new TextField();
-         etapiKirjeldus.setPromptText("etapi kirjeldus");
-         TextField etapiMuutujad=new TextField();
-         etapiMuutujad.setPromptText("muutujad");
-         String eNimi=etappNimi.getText();
-         System.out.println(eNimi);
-         infoks.getChildren().addAll(uustekst,etapiKirjeldus,etapiMuutujad,etappNimi);
-     });
-*/
+
         kaart.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 
-            /*KAARDIL OLEVATE OBJEKTIDE ÄRA TUNDMINE*/
+            /*KAARDIL OPEREERIMINE*/
             @Override
             public void handle(MouseEvent mouseEvent) {
 
+                /*Hiire klickiga täidab paremal olevad väljad*/
                 kaart.setOnMouseClicked((MouseEvent event) -> {
-                    Object aktiivne = event.getTarget();
-                    System.out.println(event.getTarget());
 
-                    if (aktiivne instanceof TextField) {
-                        String lol = ((TextField) aktiivne).getText().toString();
-                    }
+                    Object aktiivne = event.getTarget();
                     /*Kui tegemist on Rectangle objektiga siis tahan selle andmeid lugeda ja muuta*/
-                    else if (aktiivne instanceof Rectangle){
-                        System.out.println("ruut");
-                        String nimi=((Rectangle)aktiivne).getId();
-                        System.out.println(nimi);
-                        ((Rectangle)aktiivne).setUserData("sds");
-                        System.out.println(((Rectangle)aktiivne).getUserData());
-                        etapp.requestFocus();
-                    /*töölaual olevate objektide asukoha muutmine*/
-                        ((Rectangle)aktiivne).setOnMouseDragged(event1 -> {
-                            double xx=event1.getSceneX();
-                            double yy=event1.getSceneY();
-                            System.out.println("vedamine");
-                            ((Rectangle)aktiivne).setTranslateX(xx);
-                            ((Rectangle)aktiivne).setTranslateY(yy);
-                                });
-                    }
-                    else if(aktiivne instanceof Group){
-                        System.out.println("päriselt ongi grupp");
-                    }
-                    else if(aktiivne instanceof StackPane){
-                        System.out.println(counter=counter+1);
-                    }
-                    else if(aktiivne instanceof Text){
-                        System.out.println("kiri");
-                    }
-                    else if(aktiivne instanceof Node){
-                        System.out.println("node");
-                    }
-                    else{//(aktiivne instanceof Group)
-                        System.out.println("midagi muud");
+                       if (aktiivne instanceof Kast){
+                            etapp.setText(String.valueOf(((Kast)aktiivne).kastNimi));
+                            kirjeldus.setText(String.valueOf(((Kast)aktiivne).kastKirjeldus));
+                            kinnita.setOnAction(ülekirjutamine->{
+                                ((Kast) aktiivne).kastNimi=etapp.getText();
+                                ((Kast) aktiivne).kastKirjeldus=kirjeldus.getText();
+
+                                /*aeg ka veel vaja lisada*/
+                            });
+
+                        }
+                        else{
+                        }
+                });
+                /*OBJEKTI KIRJELDUSTE LUGEMINE*/
+                kaart.setOnMouseMoved(event -> {
+                    Object aktiivne = event.getTarget();
+                    if (aktiivne instanceof Kast){
+                        loggiraamat.setText("kirjeldus on"+((Kast)aktiivne).kastKirjeldus);
+                        loggiraamat.setText("KAst: " + ((Kast)aktiivne).id);
+                        loggiraamat.setText("etapinimi on"+((Kast)aktiivne).kastNimi);
+
                     }
                 });
-/*
-                    System.out.println(sitt.lookupAll(pask));
-                    String sourceID = event.getSource().toString();
-                    sourceID = sourceID.substring(sourceID.indexOf('=') + 1, sourceID.indexOf(','));
-                    Node mingi= sitt.lookup(sourceID);
-                   Group mingis=(Group)mingi.getUserData();
-                   mingis.setUserData("yoyo");
-                    Group junn=(Group)sitt.lookup("#"+sourceID);
-                    kaart.lookup(sourceID);
-                    kaart.getChildren().removeAll(kaart.lookup(sourceID));
-                    System.out.println(mingi.getUserData());
-                    //System.out.println(pask);
-                    //System.out.println(event.getTarget());
-                            String identi=event.getTarget().toString();
-                            System.out.println(identi);
-                            final Popup kinnitus=new Popup();
-                            kinnitus.setX(600);
-                            kinnitus.setY(300);
-                            kinnitus.setHeight(300);
-                            kinnitus.setWidth(400);
-                            Button kustuta=new Button();
-                            kustuta.setText("Kustuta");
-                            Button tagasi=new Button();
-                            tagasi.setText("Tagasi");
-                            tagasi.setLayoutX(200);
-                            kustuta.setLayoutX(100);
-                            HBox kustutad=new HBox(2);
-                            Circle ummargune=new Circle(100,Color.AZURE);       //praegu on ümmargune ring lihtaslt tehtud
 
-                            kustutad.getChildren().addAll(kustuta,tagasi, ummargune);
-                            //primaryStage.setScene(new Scene(kustutad,500,500));
-                            EventTarget kustutamiseks=event.getTarget();
-                            kinnitus.getContent().addAll(kustutad);
-                            kinnitus.show(primaryStage);
+                /*OBJEKTIDE LIITMINE*/
 
-                    kustuta.setOnAction(event1 -> {
-                                kaart.getChildren().remove(kustutamiseks);
-                                kaart.getChildren().remove(event.getTarget());
-                                kinnitus.hide();
-                            });
-                            tagasi.setOnAction(event1 -> {
-                                kinnitus.hide();
-
-                            });
-                     */
             }
-
-            ;
 
 
         });
@@ -272,6 +272,7 @@ public class Main extends Application{
     public static void main(String[] args) {
         launch(args);
     }
+
 
 }
 

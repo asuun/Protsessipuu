@@ -1,75 +1,71 @@
 package sample;
 
-import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
 
 /**
  * Created by The Dog on 30.12.2016.
  */
 public class Objektid {
 
-    public static Text ringiNimi( int counter,double xx, double yy, double menuuxx){
-        Text nimi=new Text();
-        String a="lalal";
+    public static Kast etapiLisamine(Rectangle protsessialgusTaust, int counterRuut, String eNimi, String eKirjeldus) {
+        Kast ruut = new Kast();
+        ruut.setWidth(140);
+        ruut.setHeight(70);
+        ruut.setFill(Color.TRANSPARENT);
+        ruut.setStroke(Color.BLUE);
+        ruut.setStrokeWidth(10);
 
-        nimi.setUserData(a);
-        nimi.setText(a);
-        nimi.setTranslateX(xx-menuuxx);
-        nimi.setTranslateY(yy);
-        return nimi;
+        ruut.setTranslateX(protsessialgusTaust.getLocalToSceneTransform().getTx());
+        ruut.setTranslateY(protsessialgusTaust.getLocalToSceneTransform().getTy());
+        //ruut.setTranslateY(yy - 260);
+        ruut.id = counterRuut + 1;
+        ruut.kastNimi=(String.valueOf(eNimi));
+        ruut.kastKirjeldus=(String.valueOf(eKirjeldus));
+
+        return ruut;
+
 
     }
-    public static Rectangle ringLisamine (double xx, double yy, double menuuxx, TextField etapp){
-        Rectangle ring=new Rectangle(130,140, Color.BLUE);
-        ring.setTranslateX(xx-menuuxx);
-        ring.setTranslateY(yy);
-        ring.setUserData("loll");
-       return ring;
-    };
-    public static Group tegevuseLisamine(double xx, double yy, TextField text1,int counter){
-        counter=counter+1;
-        Text etappLisamine=new Text();
-        etappLisamine.setText(text1.toString());
+    public static Liide ylemine( Kast algusobjekt,int counterpunkt){
+        Liide ylemine=new Liide();
+        ylemine.setRadius(5);
+        ylemine.setTranslateX(algusobjekt.getLocalToParentTransform().getTx());
+        ylemine.setTranslateY(algusobjekt.getLocalToParentTransform().getTy()-algusobjekt.getHeight()/2-4);
+        ylemine.liiteID=counterpunkt+1;
+        return ylemine;
+    }
+    public static Liide alumine(Kast algusobjekt,int counterpunkt){
+        Liide alumine=new Liide();
+        alumine.setRadius(5);
+        alumine.setTranslateX(algusobjekt.getLocalToParentTransform().getTx());
+        alumine.setTranslateY(algusobjekt.getLocalToParentTransform().getTy()+algusobjekt.getHeight()/2+4);
+        return alumine;
 
-        Text kirjeldusLisamine=new Text();
-        kirjeldusLisamine.setText(text1.toString());
-        kirjeldusLisamine.setLayoutY(30);
-
-        Rectangle etappKere=new Rectangle(150,130,Color.AZURE);
-        etappKere.setLayoutX(60);
-        etappKere.setLayoutY(50);
-
-
-
-        final Popup lisamine=new Popup();
-        lisamine.setX(600);
-        lisamine.setY(300);
-        lisamine.setHeight(300);
-        lisamine.setWidth(400);
-        TextField esimene=new TextField();
-        esimene.setPromptText("etapp");
-        TextField teine=new TextField();
-        teine.setPromptText("kirjeldus");
-        Rectangle chasis=new Rectangle(300,300,Color.BLUE);
-        Button tagasi=new Button();
-        tagasi.setText("Tagasi");
-        tagasi.setLayoutY(40);
-
-        Button kinnita=new Button();
-        tagasi.setText("kinnita");
-
-        Group tegevuse=new Group();
-        tegevuse.getChildren().addAll(etappKere,kirjeldusLisamine,etappLisamine);
-        tegevuse.setTranslateX(xx);
-        tegevuse.setTranslateY(yy);
-
-        return tegevuse;
 
     }
-};
+
+    public static Liitmine ühendused(double x1,double x2, double y1, double y2){
+        Liitmine joon=new Liitmine();
+        joon.setStartX(x1);
+        joon.setStartY(y1);
+        joon.setEndX(x2);
+        joon.setEndY(x2);
+        return joon;
+    }
+}
+
+
 
